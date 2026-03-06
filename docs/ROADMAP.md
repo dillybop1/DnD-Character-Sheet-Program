@@ -119,6 +119,7 @@ Exit criteria:
 - [x] User override: replace the permanent roster sidebar with a dedicated roster screen plus a return-to-roster action.
 - [x] User override: redesign the roster screen as a richer landing page with resume actions and recent-sheet sections.
 - [x] User override: expand the roster landing screen into a full-viewport dashboard layout on desktop.
+- [x] User override: fix roster dashboard clipping and overflow on the full-screen desktop layout.
 
 ## Defaults for Future Work
 - Stay desktop-only and local-first for v1.

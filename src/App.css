@@ -78,7 +78,9 @@ button:disabled {
 .app-shell-roster {
   grid-template-columns: minmax(0, 1fr);
   padding: 0;
-  overflow: auto;
+  align-items: start;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .app-shell-workspace {
@@ -104,10 +106,11 @@ button:disabled {
   width: 100%;
   min-height: 100dvh;
   margin: 0;
-  padding: 1.5rem 1.75rem 1.25rem;
+  padding: 1.5rem 1.75rem 2rem;
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  overflow: visible;
 }
 
 .library-shell::before {
@@ -205,7 +208,7 @@ button:disabled {
 
 .library-screen-hero {
   padding: 1.45rem;
-  overflow: hidden;
+  overflow: visible;
   grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.95fr);
   align-items: start;
   gap: 1.25rem;
@@ -227,6 +230,7 @@ button:disabled {
   z-index: 1;
   grid-template-columns: 340px minmax(0, 1fr);
   align-items: start;
+  padding-bottom: 0.5rem;
 }
 
 .library-screen-hero .library-heading {
@@ -354,6 +358,7 @@ button:disabled {
   grid-row: 1 / span 2;
   position: sticky;
   top: 1.5rem;
+  align-self: start;
 }
 
 .library-section-card-management .library-management-grid {
