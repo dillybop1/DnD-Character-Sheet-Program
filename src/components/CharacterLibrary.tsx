@@ -3,6 +3,7 @@ import type { CharacterSummary } from "../lib/character";
 type CharacterLibraryProps = {
   summaries: CharacterSummary[];
   currentCharacterId: string | null;
+  currentCharacterName: string | null;
   search: string;
   saveStatus: string;
   loading: boolean;
@@ -25,6 +26,7 @@ function formatUpdatedAt(value: string) {
 export function CharacterLibrary({
   summaries,
   currentCharacterId,
+  currentCharacterName,
   search,
   saveStatus,
   loading,
@@ -36,6 +38,16 @@ export function CharacterLibrary({
   onExport,
   onDelete,
 }: CharacterLibraryProps) {
+  function handleDelete() {
+    const label = currentCharacterName
+      ? `Delete the sheet "${currentCharacterName}"? This cannot be undone.`
+      : "Delete the current sheet? This cannot be undone.";
+
+    if (window.confirm(label)) {
+      onDelete();
+    }
+  }
+
   return (
     <aside className="library-shell">
       <div className="library-heading">
@@ -83,7 +95,7 @@ export function CharacterLibrary({
       <button
         className="ghost-button"
         disabled={!currentCharacterId}
-        onClick={onDelete}
+        onClick={handleDelete}
         type="button"
       >
         Delete current sheet

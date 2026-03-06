@@ -88,6 +88,7 @@ function App() {
       <div className="app-shell">
         <CharacterLibrary
           currentCharacterId={currentCharacter?.id ?? null}
+          currentCharacterName={currentCharacter?.metadata.name ?? null}
           loading={loading || isPending}
           onCreate={() => setCreateDialogOpen(true)}
           onDelete={() => {
