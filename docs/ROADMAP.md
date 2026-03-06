@@ -90,10 +90,9 @@ Exit criteria:
 ## Work Queue
 
 ### Now
-- [ ] Milestone 2: design a guided character creation flow with required fields, defaults, and completion hints.
+- [ ] Milestone 2: define lightweight local presets for common 5e 2024 character choices.
 
 ### Next
-- [ ] Milestone 2: define lightweight local presets for common 5e 2024 character choices.
 - [ ] Milestone 2: add inline validation and completion feedback throughout editing.
 
 ### Later
@@ -116,6 +115,7 @@ Exit criteria:
 - [x] Milestone 1: add store-flow tests for hydrate, create, open, save, delete, and duplicate behavior.
 - [x] Milestone 1: improve user-facing save/error messaging around autosave and failed Tauri commands.
 - [x] Milestone 1: design and implement a safe recovery path for corrupt character files or missing assets.
+- [x] Milestone 2: design a guided character creation flow with required fields, defaults, and completion hints.
 
 ## Defaults for Future Work
 - Stay desktop-only and local-first for v1.

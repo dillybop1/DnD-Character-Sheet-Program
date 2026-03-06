@@ -5,6 +5,10 @@ import {
   createCharacterInputSchema,
   type CreateCharacterInput,
 } from "../lib/character";
+import {
+  createCharacterDefaultValues,
+  getCreateCharacterGuidance,
+} from "../lib/createCharacterGuidance";
 
 type CreateCharacterDialogProps = {
   open: boolean;
@@ -19,19 +23,14 @@ export function CreateCharacterDialog({
 }: CreateCharacterDialogProps) {
   const form = useForm<CreateCharacterInput>({
     resolver: zodResolver(createCharacterInputSchema),
-    defaultValues: {
-      name: "",
-      playerName: "",
-      className: "",
-      species: "",
-      background: "",
-      level: 1,
-    },
+    defaultValues: createCharacterDefaultValues,
   });
+  const values = form.watch();
+  const guidance = getCreateCharacterGuidance(values);
 
   useEffect(() => {
     if (!open) {
-      form.reset();
+      form.reset(createCharacterDefaultValues);
     }
   }, [form, open]);
 
@@ -49,6 +48,35 @@ export function CreateCharacterDialog({
           immediately.
         </p>
 
+        <div className="create-guidance-card">
+          <div className="helper-row">
+            <div>
+              <span className="library-kicker">Guided setup</span>
+              <h3 className="dialog-section-title">{guidance.summaryTitle}</h3>
+            </div>
+            <span className="tag-pill">{`${guidance.completedCount}/${guidance.totalCount} ready`}</span>
+          </div>
+          <p className="sheet-copy">{guidance.summaryCopy}</p>
+
+          <div className="create-guidance-list">
+            {guidance.items.map((item) => (
+              <div className="create-guidance-item" key={item.key}>
+                <div>
+                  <strong>{item.label}</strong>
+                  <p className="field-hint">{item.guidance}</p>
+                </div>
+                <span className={`tag-pill create-step-${item.state}`}>
+                  {item.state === "complete"
+                    ? "Ready"
+                    : item.state === "required"
+                      ? "Required"
+                      : "Recommended"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <form
           className="dialog-form"
           onSubmit={form.handleSubmit(async (values) => {
@@ -57,7 +85,10 @@ export function CreateCharacterDialog({
         >
           <div className="inline-pair">
             <div className="field-group">
-              <label htmlFor="character-name">Character name</label>
+              <label htmlFor="character-name">
+                Character name
+                <span className="field-hint">Required to create the sheet.</span>
+              </label>
               <input id="character-name" {...form.register("name")} placeholder="Elara Briarwind" />
               {form.formState.errors.name ? (
                 <span className="error-copy">{form.formState.errors.name.message}</span>
@@ -65,31 +96,46 @@ export function CreateCharacterDialog({
             </div>
 
             <div className="field-group">
-              <label htmlFor="player-name">Player name</label>
+              <label htmlFor="player-name">
+                Player name
+                <span className="field-hint">Optional. Helpful if you track multiple players.</span>
+              </label>
               <input id="player-name" {...form.register("playerName")} placeholder="Optional" />
             </div>
           </div>
 
           <div className="inline-pair">
             <div className="field-group">
-              <label htmlFor="class-name">Class</label>
+              <label htmlFor="class-name">
+                Class
+                <span className="field-hint">Recommended for a more useful first draft.</span>
+              </label>
               <input id="class-name" {...form.register("className")} placeholder="Wizard" />
             </div>
 
             <div className="field-group">
-              <label htmlFor="species-name">Species</label>
+              <label htmlFor="species-name">
+                Species
+                <span className="field-hint">Recommended, but safe to fill in later.</span>
+              </label>
               <input id="species-name" {...form.register("species")} placeholder="Elf" />
             </div>
           </div>
 
           <div className="inline-pair">
             <div className="field-group">
-              <label htmlFor="background">Background</label>
+              <label htmlFor="background">
+                Background
+                <span className="field-hint">Recommended to make the identity section less blank.</span>
+              </label>
               <input id="background" {...form.register("background")} placeholder="Sage" />
             </div>
 
             <div className="field-group">
-              <label htmlFor="level">Level</label>
+              <label htmlFor="level">
+                Level
+                <span className="field-hint">Required. Defaults to level 1.</span>
+              </label>
               <input
                 id="level"
                 type="number"
@@ -97,6 +143,9 @@ export function CreateCharacterDialog({
                 max={20}
                 {...form.register("level", { valueAsNumber: true })}
               />
+              {form.formState.errors.level ? (
+                <span className="error-copy">{form.formState.errors.level.message}</span>
+              ) : null}
             </div>
           </div>
 
@@ -104,7 +153,11 @@ export function CreateCharacterDialog({
             <button className="ghost-button" onClick={onClose} type="button">
               Cancel
             </button>
-            <button className="action-button primary" type="submit">
+            <button
+              className="action-button primary"
+              disabled={!guidance.readyToCreate || form.formState.isSubmitting}
+              type="submit"
+            >
               Create character
             </button>
           </div>

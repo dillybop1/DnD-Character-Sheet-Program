@@ -938,6 +938,65 @@ button:disabled {
   gap: 1rem;
 }
 
+.dialog-section-title {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.create-guidance-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border-radius: 22px;
+  border: 1px solid rgba(89, 55, 29, 0.16);
+  background: rgba(255, 249, 238, 0.72);
+}
+
+.create-guidance-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.create-guidance-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(89, 55, 29, 0.14);
+  background: rgba(250, 243, 233, 0.58);
+}
+
+.create-guidance-item strong {
+  display: block;
+  color: var(--ink);
+}
+
+.field-hint {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.create-step-complete {
+  background: rgba(186, 220, 186, 0.24);
+  border-color: rgba(58, 117, 58, 0.3);
+  color: #2f5d2f;
+}
+
+.create-step-required {
+  background: rgba(161, 58, 58, 0.12);
+  border-color: rgba(126, 30, 30, 0.26);
+  color: #7e1e1e;
+}
+
+.create-step-recommended {
+  background: rgba(247, 220, 168, 0.2);
+  border-color: rgba(160, 104, 34, 0.32);
+  color: #6d461a;
+}
+
 .dialog-actions {
   display: flex;
   justify-content: space-between;
@@ -1082,5 +1141,10 @@ button:disabled {
   .quick-table,
   .spell-table {
     grid-template-columns: 1fr;
+  }
+
+  .create-guidance-item,
+  .dialog-actions {
+    flex-direction: column;
   }
 }
