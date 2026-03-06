@@ -34,6 +34,13 @@ struct AttachedAsset {
     mime_type: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LoadedCharacterDocument {
+    document: Value,
+    recovered_from_backup: bool,
+}
+
 fn into_command_error(error: anyhow::Error) -> String {
     error.to_string()
 }
@@ -144,21 +151,88 @@ fn summary_from_value(value: &Value) -> Result<CharacterSummary> {
     })
 }
 
-fn read_character_value(app: &AppHandle, id: &str) -> Result<Value> {
-    let primary = character_json_path(app, id)?;
-    let fallback = character_backup_path(app, id)?;
-    let target = if primary.exists() { primary } else { fallback };
-
-    if !target.exists() {
-        return Err(anyhow!("Character {id} does not exist."));
-    }
-
-    let bytes = fs::read(&target)
-        .with_context(|| format!("Unable to read character file at {}", target.display()))?;
+fn read_json_value(path: &Path) -> Result<Value> {
+    let bytes = fs::read(path)
+        .with_context(|| format!("Unable to read character file at {}", path.display()))?;
     let value = serde_json::from_slice::<Value>(&bytes)
-        .with_context(|| format!("Unable to parse character file at {}", target.display()))?;
+        .with_context(|| format!("Unable to parse character file at {}", path.display()))?;
 
     Ok(value)
+}
+
+fn read_character_value_from_paths(
+    primary: &Path,
+    fallback: &Path,
+) -> Result<LoadedCharacterDocument> {
+    if primary.exists() {
+        match read_json_value(primary) {
+            Ok(document) => {
+                return Ok(LoadedCharacterDocument {
+                    document,
+                    recovered_from_backup: false,
+                });
+            }
+            Err(primary_error) => {
+                if fallback.exists() {
+                    let document = read_json_value(fallback).with_context(|| {
+                        format!(
+                            "Unable to recover character data from backup file {}.",
+                            fallback.display()
+                        )
+                    })?;
+
+                    return Ok(LoadedCharacterDocument {
+                        document,
+                        recovered_from_backup: true,
+                    });
+                }
+
+                return Err(primary_error.context("No backup file was available for recovery."));
+            }
+        }
+    }
+
+    if fallback.exists() {
+        let document = read_json_value(fallback)?;
+        return Ok(LoadedCharacterDocument {
+            document,
+            recovered_from_backup: true,
+        });
+    }
+
+    Err(anyhow!(
+        "Character file is missing. No primary or backup file exists."
+    ))
+}
+
+fn read_character_document(app: &AppHandle, id: &str) -> Result<LoadedCharacterDocument> {
+    let primary = character_json_path(app, id)?;
+    let fallback = character_backup_path(app, id)?;
+    read_character_value_from_paths(&primary, &fallback)
+}
+
+fn write_json_value_with_backup(target: &Path, backup: &Path, value: &Value) -> Result<()> {
+    let temporary = target.with_extension("json.tmp");
+    let serialized =
+        serde_json::to_vec_pretty(value).context("Unable to serialize character data.")?;
+    fs::write(&temporary, serialized)
+        .with_context(|| format!("Unable to write temporary file {}", temporary.display()))?;
+
+    if target.exists() {
+        fs::remove_file(target).with_context(|| format!("Unable to replace {}", target.display()))?;
+    }
+
+    fs::rename(&temporary, target)
+        .with_context(|| format!("Unable to move temporary file into {}", target.display()))?;
+    fs::copy(target, backup).with_context(|| {
+        format!(
+            "Unable to refresh backup file {} from {}",
+            backup.display(),
+            target.display()
+        )
+    })?;
+
+    Ok(())
 }
 
 fn write_character_value(app: &AppHandle, value: &Value) -> Result<CharacterSummary> {
@@ -172,24 +246,7 @@ fn write_character_value(app: &AppHandle, value: &Value) -> Result<CharacterSumm
 
     let target = character_json_path(app, &summary.id)?;
     let backup = character_backup_path(app, &summary.id)?;
-
-    if target.exists() {
-        fs::copy(&target, &backup)
-            .with_context(|| format!("Unable to back up {}", target.display()))?;
-    }
-
-    let temporary = target.with_extension("json.tmp");
-    let serialized = serde_json::to_vec_pretty(value).context("Unable to serialize character data.")?;
-    fs::write(&temporary, serialized)
-        .with_context(|| format!("Unable to write temporary file {}", temporary.display()))?;
-
-    if target.exists() {
-        fs::remove_file(&target)
-            .with_context(|| format!("Unable to replace {}", target.display()))?;
-    }
-
-    fs::rename(&temporary, &target)
-        .with_context(|| format!("Unable to move temporary file into {}", target.display()))?;
+    write_json_value_with_backup(&target, &backup, value)?;
 
     Ok(summary)
 }
@@ -401,12 +458,12 @@ fn list_characters(app: AppHandle) -> Result<Vec<CharacterSummary>, String> {
                 .and_then(OsStr::to_str)
                 .ok_or_else(|| anyhow!("Character directory is missing an id."))?;
 
-            let value = match read_character_value(&app, id) {
-                Ok(value) => value,
+            let loaded = match read_character_document(&app, id) {
+                Ok(loaded) => loaded,
                 Err(_) => continue,
             };
 
-            if let Ok(summary) = summary_from_value(&value) {
+            if let Ok(summary) = summary_from_value(&loaded.document) {
                 summaries.push(summary);
             }
         }
@@ -419,8 +476,8 @@ fn list_characters(app: AppHandle) -> Result<Vec<CharacterSummary>, String> {
 }
 
 #[tauri::command]
-fn load_character(app: AppHandle, id: String) -> Result<Value, String> {
-    read_character_value(&app, &id).map_err(into_command_error)
+fn load_character(app: AppHandle, id: String) -> Result<LoadedCharacterDocument, String> {
+    read_character_document(&app, &id).map_err(into_command_error)
 }
 
 #[tauri::command]
@@ -445,8 +502,8 @@ fn delete_character(app: AppHandle, id: String) -> Result<(), String> {
 #[tauri::command]
 fn duplicate_character(app: AppHandle, id: String) -> Result<CharacterSummary, String> {
     let result = (|| -> Result<CharacterSummary> {
-        let original = read_character_value(&app, &id)?;
-        let mut duplicate = original.clone();
+        let original = read_character_document(&app, &id)?;
+        let mut duplicate = original.document.clone();
         let duplicate_id = Uuid::new_v4().to_string();
         let name = extract_string(&duplicate, &["metadata", "name"]);
         let now = chrono_like_now();
@@ -621,4 +678,69 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running wyrdsheet");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_temp_dir(label: &str) -> PathBuf {
+        let path = std::env::temp_dir().join(format!("wyrdsheet-{label}-{}", Uuid::new_v4()));
+        fs::create_dir_all(&path).unwrap();
+        path
+    }
+
+    #[test]
+    fn reads_backup_when_primary_file_is_corrupt() {
+        let dir = create_temp_dir("recover-corrupt");
+        let primary = dir.join("character.json");
+        let backup = dir.join("character.json.bak");
+
+        fs::write(&primary, "{ not valid json").unwrap();
+        fs::write(&backup, r#"{ "id": "hero-1", "metadata": { "name": "Iris Vale" } }"#).unwrap();
+
+        let loaded = read_character_value_from_paths(&primary, &backup).unwrap();
+
+        assert!(loaded.recovered_from_backup);
+        assert_eq!(loaded.document["id"], json!("hero-1"));
+
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn reads_backup_when_primary_file_is_missing() {
+        let dir = create_temp_dir("recover-missing");
+        let primary = dir.join("character.json");
+        let backup = dir.join("character.json.bak");
+
+        fs::write(&backup, r#"{ "id": "hero-2", "metadata": { "name": "Rowan" } }"#).unwrap();
+
+        let loaded = read_character_value_from_paths(&primary, &backup).unwrap();
+
+        assert!(loaded.recovered_from_backup);
+        assert_eq!(loaded.document["id"], json!("hero-2"));
+
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn writes_a_fresh_backup_after_successful_save() {
+        let dir = create_temp_dir("write-backup");
+        let primary = dir.join("character.json");
+        let backup = dir.join("character.json.bak");
+        let document = json!({
+            "id": "hero-3",
+            "metadata": { "name": "Aster" }
+        });
+
+        fs::write(&primary, "{ broken json").unwrap();
+        fs::write(&backup, r#"{ "id": "old-backup" }"#).unwrap();
+
+        write_json_value_with_backup(&primary, &backup, &document).unwrap();
+
+        assert_eq!(read_json_value(&primary).unwrap(), document);
+        assert_eq!(read_json_value(&backup).unwrap(), document);
+
+        fs::remove_dir_all(dir).unwrap();
+    }
 }

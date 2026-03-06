@@ -10,6 +10,7 @@ import * as api from "./tauri";
 export type LoadedCharacterRecord = {
   character: CharacterFileV1;
   assetDataUrls: Record<string, string>;
+  recoveryNotice: string | null;
 };
 
 export type ImportedCharacterRecord = LoadedCharacterRecord & {
@@ -28,32 +29,74 @@ export type RemovedArtRecord = {
 
 async function loadCharacterAssets(
   character: CharacterFileV1,
-): Promise<Record<string, string>> {
+): Promise<{
+  assetDataUrls: Record<string, string>;
+  missingAssetCount: number;
+}> {
   const results = await Promise.all(
     character.art.map(async (asset) => {
       try {
         return {
           id: asset.id,
           dataUrl: await api.loadArtAsset(character.id, asset.id, asset.mimeType),
+          missing: false,
         };
       } catch {
-        return null;
+        return {
+          id: asset.id,
+          dataUrl: null,
+          missing: true,
+        };
       }
     }),
   );
 
-  return Object.fromEntries(
-    results.filter(Boolean).map((asset) => [asset!.id, asset!.dataUrl]),
-  );
+  return {
+    assetDataUrls: Object.fromEntries(
+      results
+        .filter((asset): asset is { id: string; dataUrl: string; missing: boolean } =>
+          Boolean(asset.dataUrl),
+        )
+        .map((asset) => [asset.id, asset.dataUrl]),
+    ),
+    missingAssetCount: results.filter((asset) => asset.missing).length,
+  };
+}
+
+function formatRecoveryNotice(recoveredFromBackup: boolean, missingAssetCount: number) {
+  const messages: string[] = [];
+
+  if (recoveredFromBackup) {
+    messages.push(
+      "Recovered this sheet from its backup because the main character file could not be read.",
+    );
+  }
+
+  if (missingAssetCount === 1) {
+    messages.push(
+      "1 art file could not be loaded. That panel will stay empty until you replace the art.",
+    );
+  } else if (missingAssetCount > 1) {
+    messages.push(
+      `${missingAssetCount} art files could not be loaded. Those panels will stay empty until you replace the art.`,
+    );
+  }
+
+  return messages.length ? messages.join(" ") : null;
 }
 
 export async function loadCharacterRecord(
   id: string,
 ): Promise<LoadedCharacterRecord> {
-  const character = validateCharacter(await api.loadCharacter(id));
-  const assetDataUrls = await loadCharacterAssets(character);
+  const loaded = await api.loadCharacter(id);
+  const character = validateCharacter(loaded.document);
+  const { assetDataUrls, missingAssetCount } = await loadCharacterAssets(character);
 
-  return { character, assetDataUrls };
+  return {
+    character,
+    assetDataUrls,
+    recoveryNotice: formatRecoveryNotice(loaded.recoveredFromBackup, missingAssetCount),
+  };
 }
 
 export async function importCharacterRecord(

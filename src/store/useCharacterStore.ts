@@ -38,6 +38,7 @@ type CharacterStore = {
   search: string;
   saveStatus: SaveStatus;
   error: string | null;
+  notice: string | null;
   loading: boolean;
   dirty: boolean;
   hydrate: () => Promise<void>;
@@ -69,10 +70,11 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
   search: "",
   saveStatus: "idle",
   error: null,
+  notice: null,
   loading: false,
   dirty: false,
   hydrate: async () => {
-    set({ loading: true, error: null, saveStatus: "loading" });
+    set({ loading: true, error: null, notice: null, saveStatus: "loading" });
 
     try {
       const summaries = sortCharacterSummaries(await api.listCharacters());
@@ -104,7 +106,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
   createCharacter: async (input) => {
     const values = createCharacterInputSchema.parse(input);
     const character = createBlankCharacter(values);
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, notice: null });
 
     try {
       const summary = await api.saveCharacter(character);
@@ -121,10 +123,10 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     }
   },
   openCharacter: async (id) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, notice: null });
 
     try {
-      const { character, assetDataUrls } = await loadCharacterRecord(id);
+      const { character, assetDataUrls, recoveryNotice } = await loadCharacterRecord(id);
       set({
         currentCharacter: character,
         assetDataUrls,
@@ -132,6 +134,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
         selectedRegion: "identity",
         loading: false,
         dirty: false,
+        notice: recoveryNotice,
         saveStatus: "saved",
       });
     } catch (error) {
@@ -209,6 +212,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
         assetDataUrls: {},
         loading: false,
         dirty: false,
+        notice: null,
         saveStatus: "idle",
       }));
     } catch (error) {
@@ -226,7 +230,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       return;
     }
 
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, notice: null });
 
     try {
       const duplicate = await api.duplicateCharacter(current.id);
@@ -249,7 +253,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       return;
     }
 
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, notice: null });
 
     try {
       const imported = await importCharacterRecord(bundlePath);
@@ -261,6 +265,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
         selectedRegion: "identity",
         loading: false,
         dirty: false,
+        notice: imported.recoveryNotice,
         saveStatus: "saved",
       }));
     } catch (error) {

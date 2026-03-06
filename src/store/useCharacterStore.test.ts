@@ -73,6 +73,7 @@ function resetStore() {
     search: "",
     saveStatus: "idle",
     error: null,
+    notice: null,
     loading: false,
     dirty: false,
   });
@@ -125,6 +126,7 @@ describe("useCharacterStore", () => {
     repositoryMocks.loadCharacterRecord.mockImplementation(async (id: string) => ({
       character: buildCharacter({ id }),
       assetDataUrls: {},
+      recoveryNotice: null,
     }));
 
     await useCharacterStore.getState().createCharacter({
@@ -156,6 +158,7 @@ describe("useCharacterStore", () => {
       assetDataUrls: {
         "portrait-1": "data:image/png;base64,portrait",
       },
+      recoveryNotice: null,
     });
 
     await useCharacterStore.getState().openCharacter(character.id);
@@ -263,6 +266,7 @@ describe("useCharacterStore", () => {
     repositoryMocks.loadCharacterRecord.mockResolvedValue({
       character: duplicate,
       assetDataUrls: {},
+      recoveryNotice: null,
     });
 
     await useCharacterStore.getState().duplicateCurrentCharacter();
@@ -271,5 +275,23 @@ describe("useCharacterStore", () => {
     expect(repositoryMocks.loadCharacterRecord).toHaveBeenCalledWith("hero-6");
     expect(useCharacterStore.getState().currentCharacter?.id).toBe("hero-6");
     expect(useCharacterStore.getState().summaries[0]).toEqual(duplicateSummary);
+  });
+
+  it("stores recovery notices when a character is opened from backup or with missing art", async () => {
+    const character = buildCharacter({ id: "hero-recovered" });
+
+    repositoryMocks.loadCharacterRecord.mockResolvedValue({
+      character,
+      assetDataUrls: {},
+      recoveryNotice:
+        "Recovered this sheet from its backup because the main character file could not be read.",
+    });
+
+    await useCharacterStore.getState().openCharacter(character.id);
+
+    expect(useCharacterStore.getState().notice).toBe(
+      "Recovered this sheet from its backup because the main character file could not be read.",
+    );
+    expect(useCharacterStore.getState().saveStatus).toBe("saved");
   });
 });

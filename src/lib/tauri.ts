@@ -7,11 +7,16 @@ import type {
   CharacterSummary,
 } from "./character";
 
+export type LoadedCharacterDocument = {
+  document: CharacterFileV1;
+  recoveredFromBackup: boolean;
+};
+
 export async function listCharacters(): Promise<CharacterSummary[]> {
   return invoke("list_characters");
 }
 
-export async function loadCharacter(id: string): Promise<CharacterFileV1> {
+export async function loadCharacter(id: string): Promise<LoadedCharacterDocument> {
   return invoke("load_character", { id });
 }
 

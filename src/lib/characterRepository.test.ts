@@ -53,7 +53,10 @@ describe("character repository", () => {
       },
     ];
 
-    tauriMocks.loadCharacter.mockResolvedValue(character);
+    tauriMocks.loadCharacter.mockResolvedValue({
+      document: character,
+      recoveredFromBackup: false,
+    });
     tauriMocks.loadArtAsset.mockImplementation(
       async (_characterId: string, assetId: string) => {
         if (assetId === "feature-1") {
@@ -69,6 +72,8 @@ describe("character repository", () => {
       assetDataUrls: {
         "portrait-1": "data:image/png;base64,portrait",
       },
+      recoveryNotice:
+        "1 art file could not be loaded. That panel will stay empty until you replace the art.",
     });
   });
 
@@ -85,13 +90,33 @@ describe("character repository", () => {
     };
 
     tauriMocks.importCharacterBundle.mockResolvedValue(summary);
-    tauriMocks.loadCharacter.mockResolvedValue(character);
+    tauriMocks.loadCharacter.mockResolvedValue({
+      document: character,
+      recoveredFromBackup: false,
+    });
     tauriMocks.loadArtAsset.mockResolvedValue("data:image/png;base64,portrait");
 
     await expect(importCharacterRecord("A:/Imports/iris.dcsheet")).resolves.toEqual({
       summary,
       character,
       assetDataUrls: {},
+      recoveryNotice: null,
+    });
+  });
+
+  it("surfaces a recovery notice when the backend loads from backup", async () => {
+    const character = createCharacter();
+
+    tauriMocks.loadCharacter.mockResolvedValue({
+      document: character,
+      recoveredFromBackup: true,
+    });
+
+    await expect(loadCharacterRecord(character.id)).resolves.toEqual({
+      character,
+      assetDataUrls: {},
+      recoveryNotice:
+        "Recovered this sheet from its backup because the main character file could not be read.",
     });
   });
 

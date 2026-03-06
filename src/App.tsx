@@ -24,6 +24,7 @@ function App() {
     search,
     saveStatus,
     error,
+    notice,
     loading,
     dirty,
     hydrate,
@@ -137,6 +138,7 @@ function App() {
                     {error}
                   </p>
                 ) : null}
+                {notice ? <p className="workspace-notice">{notice}</p> : null}
               </div>
               <button
                 className="action-button"
