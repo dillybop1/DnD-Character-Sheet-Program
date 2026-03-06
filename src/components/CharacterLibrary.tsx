@@ -177,7 +177,7 @@ export function CharacterLibrary({
         </div>
 
         <div className="library-screen-body">
-          <section className="library-section-card">
+          <section className="library-section-card library-section-card-management">
             <div className="library-section-heading">
               <div>
                 <span className="library-kicker">Current tools</span>
@@ -216,7 +216,7 @@ export function CharacterLibrary({
           </section>
 
           {recentSummaries.length ? (
-            <section className="library-section-card">
+            <section className="library-section-card library-section-card-recent">
               <div className="library-section-heading">
                 <div>
                   <span className="library-kicker">Recently updated</span>
@@ -230,7 +230,7 @@ export function CharacterLibrary({
             </section>
           ) : null}
 
-          <section className="library-section-card">
+          <section className="library-section-card library-section-card-roster">
             <div className="library-section-heading">
               <div>
                 <span className="library-kicker">All sheets</span>
