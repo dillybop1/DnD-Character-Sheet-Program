@@ -90,15 +90,13 @@ Exit criteria:
 ## Work Queue
 
 ### Now
-- [ ] Milestone 2: define lightweight local presets for common 5e 2024 character choices.
+- [ ] Milestone 2: improve quick in-sheet editing for HP, spell slots, conditions, and notes.
 
 ### Next
-- [ ] Milestone 2: add inline validation and completion feedback throughout editing.
-
-### Later
-- [ ] Milestone 2: improve quick in-sheet editing for HP, spell slots, conditions, and notes.
 - [ ] Milestone 3: build print view modes for decorated parchment and ink-saver output.
 - [ ] Milestone 3: improve library search, sorting, archive/delete safety, and sample onboarding content.
+
+### Later
 - [ ] Milestone 3: strengthen bundle validation, snapshot backup handling, and recovery prompts.
 - [ ] Milestone 3: polish theme and art handling without opening arbitrary layout editing.
 - [ ] Milestone 4: finalize release checklist, packaging verification, and platform-specific bundle polish.
@@ -116,6 +114,8 @@ Exit criteria:
 - [x] Milestone 1: improve user-facing save/error messaging around autosave and failed Tauri commands.
 - [x] Milestone 1: design and implement a safe recovery path for corrupt character files or missing assets.
 - [x] Milestone 2: design a guided character creation flow with required fields, defaults, and completion hints.
+- [x] Milestone 2: define lightweight local presets for common 5e 2024 character choices.
+- [x] Milestone 2: add inline validation and completion feedback throughout editing.
 
 ## Defaults for Future Work
 - Stay desktop-only and local-first for v1.

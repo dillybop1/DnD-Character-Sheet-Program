@@ -46,4 +46,21 @@ describe("CreateCharacterDialog", () => {
       }),
     );
   });
+
+  it("applies a starter preset to the class, species, and background fields", () => {
+    render(
+      <CreateCharacterDialog
+        onClose={() => {}}
+        onCreate={vi.fn().mockResolvedValue(undefined)}
+        open
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Wizard Sage/i }));
+
+    expect(screen.getByLabelText(/Class/i)).toHaveValue("Wizard");
+    expect(screen.getByLabelText(/Species/i)).toHaveValue("Elf");
+    expect(screen.getByLabelText(/Background/i)).toHaveValue("Sage");
+    expect(screen.getByLabelText(/Level/i)).toHaveValue(1);
+  });
 });

@@ -9,6 +9,11 @@ import {
   createCharacterDefaultValues,
   getCreateCharacterGuidance,
 } from "../lib/createCharacterGuidance";
+import {
+  applyCreateCharacterPreset,
+  createCharacterPresets,
+  findActiveCreateCharacterPreset,
+} from "../lib/createCharacterPresets";
 
 type CreateCharacterDialogProps = {
   open: boolean;
@@ -27,6 +32,7 @@ export function CreateCharacterDialog({
   });
   const values = form.watch();
   const guidance = getCreateCharacterGuidance(values);
+  const activePreset = findActiveCreateCharacterPreset(values);
 
   useEffect(() => {
     if (!open) {
@@ -47,6 +53,35 @@ export function CreateCharacterDialog({
           This creates the local character bundle and opens the live sheet workspace
           immediately.
         </p>
+
+        <div className="create-guidance-card">
+          <div className="helper-row">
+            <div>
+              <span className="library-kicker">Starter presets</span>
+              <h3 className="dialog-section-title">Pick a quick 5e starting point</h3>
+            </div>
+            <span className="tag-pill">{`${createCharacterPresets.length} presets`}</span>
+          </div>
+          <p className="sheet-copy">
+            Presets fill in class, species, background, and level. Your character name and
+            player name stay untouched.
+          </p>
+          <div className="preset-grid">
+            {createCharacterPresets.map((preset) => (
+              <button
+                className={`preset-button${activePreset?.id === preset.id ? " active" : ""}`}
+                key={preset.id}
+                onClick={() => {
+                  form.reset(applyCreateCharacterPreset(form.getValues(), preset));
+                }}
+                type="button"
+              >
+                <strong>{preset.label}</strong>
+                <span>{preset.summary}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="create-guidance-card">
           <div className="helper-row">

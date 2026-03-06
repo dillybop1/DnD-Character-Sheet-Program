@@ -10,6 +10,7 @@ import {
   type CharacterFileV1,
   type SheetRegion,
 } from "../lib/character";
+import { getRegionGuidance } from "../lib/characterEditingGuidance";
 
 type InspectorPanelProps = {
   character: CharacterFileV1;
@@ -46,6 +47,7 @@ export function InspectorPanel({
   const portraitUrl = portrait ? assetDataUrls[portrait.id] : null;
   const featureArtUrl = featureArt ? assetDataUrls[featureArt.id] : null;
   const spellArtUrl = spellArt ? assetDataUrls[spellArt.id] : null;
+  const regionGuidance = getRegionGuidance(character, region);
 
   return (
     <aside className="inspector-panel">
@@ -75,6 +77,52 @@ export function InspectorPanel({
           parchment preview immediately and autosave shortly after.
         </p>
       </div>
+
+      {regionGuidance ? (
+        <div className="inspector-guidance-card">
+          <div className="helper-row">
+            <div>
+              <span className="library-kicker">Editor guidance</span>
+              <h3 className="dialog-section-title">{regionGuidance.title}</h3>
+            </div>
+            <span className="tag-pill">
+              {
+                regionGuidance.items.filter((item) => item.state === "complete").length
+              }
+              /{regionGuidance.items.length} ready
+            </span>
+          </div>
+          <p className="inspector-copy">{regionGuidance.summary}</p>
+
+          <div className="inspector-guidance-list">
+            {regionGuidance.items.map((item) => (
+              <div className="inspector-guidance-item" key={item.label}>
+                <div>
+                  <strong>{item.label}</strong>
+                  <p className="field-hint">{item.detail}</p>
+                </div>
+                <span className={`tag-pill create-step-${item.state}`}>
+                  {item.state === "complete"
+                    ? "Ready"
+                    : item.state === "required"
+                      ? "Required"
+                      : "Recommended"}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {regionGuidance.issues.length ? (
+            <div className="inspector-warning-list">
+              {regionGuidance.issues.map((issue) => (
+                <p className="workspace-error inspector-warning" key={issue}>
+                  {issue}
+                </p>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {region === "identity" ? (
         <div className="form-grid">
