@@ -19,6 +19,13 @@ import {
   sortCharacterSummaries,
   upsertCharacterSummary,
 } from "../lib/characterPresentation";
+import {
+  attachArtToCharacter,
+  exportCharacterRecord,
+  importCharacterRecord,
+  loadCharacterRecord,
+  removeArtFromCharacter,
+} from "../lib/characterRepository";
 import * as api from "../lib/tauri";
 
 type SaveStatus = "idle" | "loading" | "dirty" | "saving" | "saved" | "error";
@@ -52,25 +59,6 @@ type CharacterStore = {
 
 function defaultRegionForPage(page: SheetPage): SheetRegion {
   return regionOrderByPage[page][0];
-}
-
-async function refreshAssets(character: CharacterFileV1) {
-  const results = await Promise.all(
-    character.art.map(async (asset) => {
-      try {
-        return {
-          id: asset.id,
-          dataUrl: await api.loadArtAsset(character.id, asset.id, asset.mimeType),
-        };
-      } catch {
-        return null;
-      }
-    }),
-  );
-
-  return Object.fromEntries(
-    results.filter(Boolean).map((asset) => [asset!.id, asset!.dataUrl]),
-  );
 }
 
 export const useCharacterStore = create<CharacterStore>((set, get) => ({
@@ -137,10 +125,9 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const loaded = validateCharacter(await api.loadCharacter(id));
-      const assetDataUrls = await refreshAssets(loaded);
+      const { character, assetDataUrls } = await loadCharacterRecord(id);
       set({
-        currentCharacter: loaded,
+        currentCharacter: character,
         assetDataUrls,
         activePage: "core",
         selectedRegion: "identity",
@@ -266,11 +253,17 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const imported = await api.importCharacterBundle(bundlePath);
+      const imported = await importCharacterRecord(bundlePath);
       set((state) => ({
-        summaries: upsertCharacterSummary(state.summaries, imported),
+        summaries: upsertCharacterSummary(state.summaries, imported.summary),
+        currentCharacter: imported.character,
+        assetDataUrls: imported.assetDataUrls,
+        activePage: "core",
+        selectedRegion: "identity",
+        loading: false,
+        dirty: false,
+        saveStatus: "saved",
       }));
-      await get().openCharacter(imported.id);
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Failed to import bundle.",
@@ -294,7 +287,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     }
 
     try {
-      await api.exportCharacterBundle(current.id, destinationPath);
+      await exportCharacterRecord(current.id, destinationPath);
       set({ error: null });
     } catch (error) {
       set({
@@ -317,22 +310,27 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     }
 
     try {
-      const existing = current.art.find((entry) => entry.slot === slot);
-      if (existing) {
-        await api.removeArtAsset(current.id, existing.id);
-      }
-      const asset = await api.attachArtAsset(current.id, sourcePath, slot);
-      const dataUrl = await api.loadArtAsset(current.id, asset.id, asset.mimeType);
+      const { asset, dataUrl, replacedAssetId } = await attachArtToCharacter(
+        current,
+        sourcePath,
+        slot,
+      );
+
       get().updateCurrentCharacter((draft) => {
         draft.art = draft.art.filter((entry) => entry.slot !== slot);
         draft.art.push(asset);
       });
-      set((state) => ({
-        assetDataUrls: {
-          ...state.assetDataUrls,
-          [asset.id]: dataUrl,
-        },
-      }));
+      set((state) => {
+        const next = { ...state.assetDataUrls };
+
+        if (replacedAssetId) {
+          delete next[replacedAssetId];
+        }
+
+        next[asset.id] = dataUrl;
+
+        return { assetDataUrls: next };
+      });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Failed to attach art asset.",
@@ -354,13 +352,18 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     }
 
     try {
-      await api.removeArtAsset(current.id, asset.id);
+      const removed = await removeArtFromCharacter(current, slot);
+
+      if (!removed) {
+        return;
+      }
+
       get().updateCurrentCharacter((draft) => {
-        draft.art = draft.art.filter((entry) => entry.id !== asset.id);
+        draft.art = draft.art.filter((entry) => entry.id !== removed.removedAssetId);
       });
       set((state) => {
         const next = { ...state.assetDataUrls };
-        delete next[asset.id];
+        delete next[removed.removedAssetId];
         return { assetDataUrls: next };
       });
     } catch (error) {
