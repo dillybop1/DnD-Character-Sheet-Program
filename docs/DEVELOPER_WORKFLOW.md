@@ -68,6 +68,17 @@ If Windows PowerShell blocks `npm`, use:
 npm.cmd run tauri dev
 ```
 
+If you are on Windows and want the shortest option from the repo root, use:
+
+```powershell
+.\dev.cmd
+```
+
+What it does:
+- loads the Visual Studio C++ build environment
+- adds Rust to `PATH`
+- starts `npm.cmd run tauri dev`
+
 Run the frontend tests:
 
 ```bash
