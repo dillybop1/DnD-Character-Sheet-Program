@@ -10,7 +10,7 @@ import { CharacterLibrary } from "./components/CharacterLibrary";
 import { CreateCharacterDialog } from "./components/CreateCharacterDialog";
 import { InspectorPanel } from "./components/InspectorPanel";
 import { SheetWorkspace } from "./components/SheetWorkspace";
-import { summarizeCharacterHeadline } from "./lib/character";
+import { summarizeCharacterHeadline } from "./lib/characterPresentation";
 import { useCharacterStore } from "./store/useCharacterStore";
 
 function App() {

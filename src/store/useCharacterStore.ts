@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import {
-  compareSummaries,
   createBlankCharacter,
   createCharacterInputSchema,
   regionOrderByPage,
@@ -13,6 +12,13 @@ import {
   updateTimestamp,
   validateCharacter,
 } from "../lib/character";
+import {
+  characterToSummary,
+  createExportBundleName,
+  patchSummaryFromCharacter,
+  sortCharacterSummaries,
+  upsertCharacterSummary,
+} from "../lib/characterPresentation";
 import * as api from "../lib/tauri";
 
 type SaveStatus = "idle" | "loading" | "dirty" | "saving" | "saved" | "error";
@@ -43,10 +49,6 @@ type CharacterStore = {
   attachArt: (slot: ArtSlot) => Promise<void>;
   removeArt: (slot: ArtSlot) => Promise<void>;
 };
-
-function sortSummaries(summaries: CharacterSummary[]) {
-  return [...summaries].sort(compareSummaries);
-}
 
 function defaultRegionForPage(page: SheetPage): SheetRegion {
   return regionOrderByPage[page][0];
@@ -86,7 +88,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     set({ loading: true, error: null, saveStatus: "loading" });
 
     try {
-      const summaries = sortSummaries(await api.listCharacters());
+      const summaries = sortCharacterSummaries(await api.listCharacters());
       set({
         summaries,
         loading: false,
@@ -120,7 +122,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     try {
       const summary = await api.saveCharacter(character);
       set((state) => ({
-        summaries: sortSummaries([summary, ...state.summaries.filter((entry) => entry.id !== summary.id)]),
+        summaries: upsertCharacterSummary(state.summaries, summary),
       }));
       await get().openCharacter(character.id);
     } catch (error) {
@@ -165,30 +167,21 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     mutator(draft);
     const next = updateTimestamp(draft);
 
-    set((state) => ({
-      currentCharacter: next,
-      dirty: true,
-      saveStatus: "dirty",
-      summaries: sortSummaries(
-        state.summaries.map((summary) =>
-          summary.id === next.id
-            ? {
-                ...summary,
-                name: next.metadata.name,
-                classSummary: `${`Level ${next.build.level}`} • ${next.build.className || "Adventurer"}${next.build.species ? ` • ${next.build.species}` : ""}`,
-                subtitle: next.metadata.playerName
-                  ? `Player: ${next.metadata.playerName}`
-                  : next.metadata.campaign
-                    ? `Campaign: ${next.metadata.campaign}`
-                    : next.ruleset,
-                updatedAt: next.metadata.updatedAt,
-                hasPortrait: next.art.some((asset) => asset.slot === "portrait"),
-                themeId: next.theme.id,
-              }
-            : summary,
+    set((state) => {
+      const existingSummary = state.summaries.find((summary) => summary.id === next.id);
+
+      return {
+        currentCharacter: next,
+        dirty: true,
+        saveStatus: "dirty",
+        summaries: upsertCharacterSummary(
+          state.summaries,
+          existingSummary
+            ? patchSummaryFromCharacter(existingSummary, next)
+            : characterToSummary(next),
         ),
-      ),
-    }));
+      };
+    });
   },
   saveCurrentCharacter: async () => {
     const current = get().currentCharacter;
@@ -202,9 +195,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     try {
       const summary = await api.saveCharacter(validateCharacter(current));
       set((state) => ({
-        summaries: sortSummaries(
-          [summary, ...state.summaries.filter((entry) => entry.id !== summary.id)],
-        ),
+        summaries: upsertCharacterSummary(state.summaries, summary),
         dirty: false,
         saveStatus: "saved",
       }));
@@ -254,7 +245,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     try {
       const duplicate = await api.duplicateCharacter(current.id);
       set((state) => ({
-        summaries: sortSummaries([duplicate, ...state.summaries.filter((entry) => entry.id !== duplicate.id)]),
+        summaries: upsertCharacterSummary(state.summaries, duplicate),
       }));
       await get().openCharacter(duplicate.id);
     } catch (error) {
@@ -277,7 +268,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
     try {
       const imported = await api.importCharacterBundle(bundlePath);
       set((state) => ({
-        summaries: sortSummaries([imported, ...state.summaries.filter((entry) => entry.id !== imported.id)]),
+        summaries: upsertCharacterSummary(state.summaries, imported),
       }));
       await get().openCharacter(imported.id);
     } catch (error) {
@@ -295,7 +286,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       return;
     }
 
-    const safeName = current.metadata.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "character";
+    const safeName = createExportBundleName(current.metadata.name);
     const destinationPath = await api.chooseExportBundle(safeName);
 
     if (!destinationPath) {

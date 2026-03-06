@@ -90,9 +90,8 @@ Exit criteria:
 ## Work Queue
 
 ### Now
-- [ ] Milestone 1: extract summary sorting, summary patching, and export-name helpers from `useCharacterStore` into a pure presentation helper module.
 - [ ] Milestone 1: fix visible encoding artifacts such as garbled bullet separators in UI strings and summary formatting.
-- [ ] Milestone 1: add tests for summary formatting and other shared character presentation helpers.
+- [ ] Milestone 1: extract Tauri-heavy character loading, import/export, and art workflows into a repository-style helper module.
 - [ ] Milestone 1: add store-flow tests for hydrate, create, open, save, delete, and duplicate behavior.
 
 ### Next
@@ -115,6 +114,8 @@ Exit criteria:
 - [x] Milestone 0: add canonical roadmap and milestone definitions in `docs/ROADMAP.md`.
 - [x] Milestone 0: add beginner workflow and onboarding guidance in `docs/DEVELOPER_WORKFLOW.md`.
 - [x] Milestone 1: audit `useCharacterStore` responsibilities and document the first extraction seams in `docs/STORE_AUDIT.md`.
+- [x] Milestone 1: extract summary sorting, summary patching, and export-name helpers from `useCharacterStore` into `src/lib/characterPresentation.ts`.
+- [x] Milestone 1: add tests for summary formatting and other shared character presentation helpers.
 
 ## Defaults for Future Work
 - Stay desktop-only and local-first for v1.

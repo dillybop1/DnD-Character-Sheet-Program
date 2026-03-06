@@ -213,7 +213,7 @@ export const characterFileSchema = z.object({
   theme: themeSchema,
 });
 
-const characterSummarySchema = z.object({
+export const characterSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
   classSummary: z.string(),
@@ -443,32 +443,6 @@ export function deriveCharacter(character: CharacterFileV1): DerivedCharacter {
   };
 }
 
-export function characterToSummary(character: CharacterFileV1): CharacterSummary {
-  return characterSummarySchema.parse({
-    id: character.id,
-    name: character.metadata.name,
-    classSummary: summarizeCharacterHeadline(character),
-    subtitle: character.metadata.playerName
-      ? `Player: ${character.metadata.playerName}`
-      : character.metadata.campaign
-        ? `Campaign: ${character.metadata.campaign}`
-        : character.ruleset,
-    updatedAt: character.metadata.updatedAt,
-    hasPortrait: character.art.some((asset) => asset.slot === "portrait"),
-    themeId: character.theme.id,
-  });
-}
-
-export function summarizeCharacterHeadline(character: CharacterFileV1): string {
-  const parts = [
-    `Level ${character.build.level}`,
-    character.build.className || "Adventurer",
-    character.build.species || "",
-  ].filter(Boolean);
-
-  return parts.join(" • ");
-}
-
 export function validateCharacter(document: unknown): CharacterFileV1 {
   return characterFileSchema.parse(document);
 }
@@ -496,8 +470,4 @@ export function updateTimestamp(character: CharacterFileV1): CharacterFileV1 {
       updatedAt: new Date().toISOString(),
     },
   };
-}
-
-export function compareSummaries(left: CharacterSummary, right: CharacterSummary): number {
-  return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
 }
