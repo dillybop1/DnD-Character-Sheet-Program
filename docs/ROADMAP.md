@@ -90,7 +90,6 @@ Exit criteria:
 ## Work Queue
 
 ### Now
-- [ ] Milestone 1: improve user-facing save/error messaging around autosave and failed Tauri commands.
 - [ ] Milestone 1: design and implement a safe recovery path for corrupt character files or missing assets.
 
 ### Next
@@ -116,6 +115,7 @@ Exit criteria:
 - [x] Milestone 1: fix visible encoding artifacts in user-facing separator strings.
 - [x] Milestone 1: extract Tauri-heavy character loading, import/export, and art workflows into `src/lib/characterRepository.ts`.
 - [x] Milestone 1: add store-flow tests for hydrate, create, open, save, delete, and duplicate behavior.
+- [x] Milestone 1: improve user-facing save/error messaging around autosave and failed Tauri commands.
 
 ## Defaults for Future Work
 - Stay desktop-only and local-first for v1.

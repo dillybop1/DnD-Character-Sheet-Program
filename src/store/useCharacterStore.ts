@@ -26,9 +26,8 @@ import {
   loadCharacterRecord,
   removeArtFromCharacter,
 } from "../lib/characterRepository";
+import { formatCommandError, type SaveStatus } from "../lib/statusFeedback";
 import * as api from "../lib/tauri";
-
-type SaveStatus = "idle" | "loading" | "dirty" | "saving" | "saved" | "error";
 
 type CharacterStore = {
   summaries: CharacterSummary[];
@@ -84,7 +83,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to load character library.",
+        error: formatCommandError("loadLibrary", error),
         loading: false,
         saveStatus: "error",
       });
@@ -115,7 +114,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       await get().openCharacter(character.id);
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to create character.",
+        error: formatCommandError("createCharacter", error),
         loading: false,
         saveStatus: "error",
       });
@@ -137,7 +136,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to open character.",
+        error: formatCommandError("openCharacter", error),
         loading: false,
         saveStatus: "error",
       });
@@ -188,7 +187,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       }));
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to save character.",
+        error: formatCommandError("saveCharacter", error),
         saveStatus: "error",
       });
     }
@@ -214,7 +213,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       }));
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to delete character.",
+        error: formatCommandError("deleteCharacter", error),
         loading: false,
         saveStatus: "error",
       });
@@ -237,7 +236,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       await get().openCharacter(duplicate.id);
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to duplicate character.",
+        error: formatCommandError("duplicateCharacter", error),
         loading: false,
         saveStatus: "error",
       });
@@ -266,7 +265,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       }));
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to import bundle.",
+        error: formatCommandError("importBundle", error),
         loading: false,
         saveStatus: "error",
       });
@@ -291,7 +290,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       set({ error: null });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to export bundle.",
+        error: formatCommandError("exportBundle", error),
         saveStatus: "error",
       });
     }
@@ -333,7 +332,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to attach art asset.",
+        error: formatCommandError("attachArt", error),
         saveStatus: "error",
       });
     }
@@ -368,7 +367,7 @@ export const useCharacterStore = create<CharacterStore>((set, get) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to remove art asset.",
+        error: formatCommandError("removeArt", error),
         saveStatus: "error",
       });
     }

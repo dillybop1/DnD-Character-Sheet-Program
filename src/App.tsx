@@ -11,6 +11,7 @@ import { CreateCharacterDialog } from "./components/CreateCharacterDialog";
 import { InspectorPanel } from "./components/InspectorPanel";
 import { SheetWorkspace } from "./components/SheetWorkspace";
 import { summarizeCharacterHeadline } from "./lib/characterPresentation";
+import { getSaveStatusLabel, getSaveStatusTone } from "./lib/statusFeedback";
 import { useCharacterStore } from "./store/useCharacterStore";
 
 function App() {
@@ -82,6 +83,8 @@ function App() {
   const headline = currentCharacter
     ? summarizeCharacterHeadline(currentCharacter)
     : "Build a parchment-style sheet with live previews, side-panel editing, and portable art-aware bundles.";
+  const saveStatusLabel = getSaveStatusLabel(saveStatus);
+  const saveStatusTone = getSaveStatusTone(saveStatus);
 
   return (
     <>
@@ -125,8 +128,16 @@ function App() {
             </div>
 
             <div className="workspace-actions">
-              <span className="status-pill">{saveStatus}</span>
-              {error ? <span className="status-pill error-copy">{error}</span> : null}
+              <div className="workspace-feedback">
+                <span className={`status-pill status-pill-${saveStatusTone}`} role="status">
+                  {saveStatusLabel}
+                </span>
+                {error ? (
+                  <p className="workspace-error" role="alert">
+                    {error}
+                  </p>
+                ) : null}
+              </div>
               <button
                 className="action-button"
                 onClick={() => {

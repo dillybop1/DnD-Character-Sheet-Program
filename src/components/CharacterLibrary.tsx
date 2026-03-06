@@ -1,11 +1,12 @@
 import type { CharacterSummary } from "../lib/character";
+import { formatLibraryStatus, type SaveStatus } from "../lib/statusFeedback";
 
 type CharacterLibraryProps = {
   summaries: CharacterSummary[];
   currentCharacterId: string | null;
   currentCharacterName: string | null;
   search: string;
-  saveStatus: string;
+  saveStatus: SaveStatus;
   loading: boolean;
   onSearchChange: (value: string) => void;
   onSelect: (id: string) => void;
@@ -104,7 +105,7 @@ export function CharacterLibrary({
       <div className="helper-row">
         <span className="library-kicker">Roster</span>
         <span className="summary-badge">
-          {loading ? "Loading" : `${summaries.length} sheets`} - {saveStatus}
+          {formatLibraryStatus(summaries.length, loading, saveStatus)}
         </span>
       </div>
 

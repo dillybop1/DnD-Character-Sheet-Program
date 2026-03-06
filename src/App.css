@@ -332,6 +332,14 @@ button:disabled {
   gap: 0.7rem;
 }
 
+.workspace-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+  max-width: min(100%, 30rem);
+}
+
 .status-pill,
 .summary-badge,
 .tag-pill {
@@ -341,6 +349,28 @@ button:disabled {
   background: rgba(250, 243, 232, 0.72);
   color: var(--ink);
   font-size: 0.8rem;
+}
+
+.status-pill-neutral {
+  background: rgba(250, 243, 232, 0.72);
+}
+
+.status-pill-warning {
+  background: rgba(247, 220, 168, 0.2);
+  border-color: rgba(160, 104, 34, 0.32);
+  color: #6d461a;
+}
+
+.status-pill-success {
+  background: rgba(186, 220, 186, 0.24);
+  border-color: rgba(58, 117, 58, 0.3);
+  color: #2f5d2f;
+}
+
+.status-pill-error {
+  background: rgba(161, 58, 58, 0.12);
+  border-color: rgba(126, 30, 30, 0.26);
+  color: #7e1e1e;
 }
 
 .summary-badge {
@@ -916,6 +946,18 @@ button:disabled {
 
 .error-copy {
   color: #7e1e1e;
+}
+
+.workspace-error {
+  margin: 0;
+  max-width: 30rem;
+  border-radius: 14px;
+  border: 1px solid rgba(126, 30, 30, 0.22);
+  background: rgba(126, 30, 30, 0.09);
+  padding: 0.65rem 0.8rem;
+  color: #7e1e1e;
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
 .helper-row {

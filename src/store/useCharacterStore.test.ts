@@ -211,6 +211,38 @@ describe("useCharacterStore", () => {
     expect(useCharacterStore.getState().saveStatus).toBe("idle");
   });
 
+  it("keeps the current sheet dirty and shows a helpful error when saving fails", async () => {
+    const character = buildCharacter({ id: "hero-save-error" });
+    const summary = characterToSummary(character);
+
+    useCharacterStore.setState({
+      currentCharacter: character,
+      summaries: [summary],
+      dirty: true,
+      saveStatus: "dirty",
+    });
+    apiMocks.saveCharacter.mockRejectedValue(new Error("The file is locked."));
+
+    await useCharacterStore.getState().saveCurrentCharacter();
+
+    expect(useCharacterStore.getState().dirty).toBe(true);
+    expect(useCharacterStore.getState().saveStatus).toBe("error");
+    expect(useCharacterStore.getState().error).toBe(
+      "Could not save this sheet. Your edits are still open in the app. Details: The file is locked.",
+    );
+  });
+
+  it("shows a clearer library error when hydrate fails", async () => {
+    apiMocks.listCharacters.mockRejectedValue(new Error("Access denied."));
+
+    await useCharacterStore.getState().hydrate();
+
+    expect(useCharacterStore.getState().saveStatus).toBe("error");
+    expect(useCharacterStore.getState().error).toBe(
+      "Could not load the character library. Details: Access denied.",
+    );
+  });
+
   it("duplicates the current character and opens the duplicate", async () => {
     const current = buildCharacter({ id: "hero-5" });
     const duplicate = buildCharacter({
