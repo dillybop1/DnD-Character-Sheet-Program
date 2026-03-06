@@ -917,6 +917,7 @@ button:disabled {
   padding: 2rem;
   background: rgba(28, 17, 10, 0.52);
   backdrop-filter: blur(6px);
+  overflow-y: auto;
   z-index: 40;
 }
 
@@ -926,11 +927,13 @@ button:disabled {
   display: grid;
   gap: 1rem;
   padding: 1.4rem;
+  max-height: calc(100dvh - 4rem);
   border: 1px solid rgba(88, 56, 29, 0.28);
   border-radius: 30px;
   background:
     linear-gradient(180deg, rgba(250, 244, 233, 0.98), rgba(234, 218, 190, 0.98));
   box-shadow: 0 32px 90px rgba(24, 15, 10, 0.42);
+  overflow-y: auto;
 }
 
 .dialog-form {
