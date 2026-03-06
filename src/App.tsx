@@ -90,6 +90,7 @@ function App() {
   const saveStatusLabel = getSaveStatusLabel(saveStatus);
   const saveStatusTone = getSaveStatusTone(saveStatus);
   const isRosterView = currentView === "roster" || !currentCharacter;
+  const screenSummaries = deferredSearch.trim() ? filteredSummaries : summaries;
 
   async function openWorkspaceAfter(action: () => Promise<void>) {
     const previousCharacter = useCharacterStore.getState().currentCharacter;
@@ -137,7 +138,7 @@ function App() {
             }}
             saveStatus={saveStatus}
             search={search}
-            summaries={filteredSummaries}
+            summaries={screenSummaries}
             variant="screen"
           />
         </div>

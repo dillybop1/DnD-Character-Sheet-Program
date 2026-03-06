@@ -103,8 +103,8 @@ describe("App roster navigation", () => {
 
     render(<App />);
 
-    expect(await screen.findByRole("button", { name: /Iris Vale/i })).toBeInTheDocument();
-    expect(screen.getByText("Choose a sheet to enter the live workspace, or create and import one below.")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Resume Iris Vale" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Choose your next sheet." })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Return to roster" })).not.toBeInTheDocument();
   });
 
@@ -131,7 +131,7 @@ describe("App roster navigation", () => {
 
     render(<App />);
 
-    fireEvent.click(await screen.findByRole("button", { name: /Iris Vale/i }));
+    fireEvent.click(await screen.findByRole("button", { name: "Resume Iris Vale" }));
 
     expect(await screen.findByRole("button", { name: "Return to roster" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Iris Vale" })).toBeInTheDocument();
@@ -141,6 +141,6 @@ describe("App roster navigation", () => {
     await waitFor(() =>
       expect(screen.queryByRole("button", { name: "Return to roster" })).not.toBeInTheDocument(),
     );
-    expect(screen.getByRole("button", { name: /Iris Vale/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Resume Iris Vale" })).toBeInTheDocument();
   });
 });
