@@ -90,12 +90,11 @@ Exit criteria:
 ## Work Queue
 
 ### Now
-- [ ] Milestone 1: fix visible encoding artifacts such as garbled bullet separators in UI strings and summary formatting.
 - [ ] Milestone 1: extract Tauri-heavy character loading, import/export, and art workflows into a repository-style helper module.
 - [ ] Milestone 1: add store-flow tests for hydrate, create, open, save, delete, and duplicate behavior.
+- [ ] Milestone 1: improve user-facing save/error messaging around autosave and failed Tauri commands.
 
 ### Next
-- [ ] Milestone 1: improve user-facing save/error messaging around autosave and failed Tauri commands.
 - [ ] Milestone 1: design and implement a safe recovery path for corrupt character files or missing assets.
 - [ ] Milestone 2: design a guided character creation flow with required fields, defaults, and completion hints.
 - [ ] Milestone 2: define lightweight local presets for common 5e 2024 character choices.
@@ -116,6 +115,7 @@ Exit criteria:
 - [x] Milestone 1: audit `useCharacterStore` responsibilities and document the first extraction seams in `docs/STORE_AUDIT.md`.
 - [x] Milestone 1: extract summary sorting, summary patching, and export-name helpers from `useCharacterStore` into `src/lib/characterPresentation.ts`.
 - [x] Milestone 1: add tests for summary formatting and other shared character presentation helpers.
+- [x] Milestone 1: fix visible encoding artifacts in user-facing separator strings.
 
 ## Defaults for Future Work
 - Stay desktop-only and local-first for v1.

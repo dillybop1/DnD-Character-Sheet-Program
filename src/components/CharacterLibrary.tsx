@@ -92,7 +92,7 @@ export function CharacterLibrary({
       <div className="helper-row">
         <span className="library-kicker">Roster</span>
         <span className="summary-badge">
-          {loading ? "Loading" : `${summaries.length} sheets`} · {saveStatus}
+          {loading ? "Loading" : `${summaries.length} sheets`} - {saveStatus}
         </span>
       </div>
 
@@ -127,7 +127,7 @@ export function CharacterLibrary({
       </div>
 
       <div className="library-footer">
-        v1 alpha · macOS and Windows release targets · portable `.dcsheet` bundles
+        v1 alpha - macOS and Windows release targets - portable `.dcsheet` bundles
       </div>
     </aside>
   );

@@ -769,7 +769,7 @@ export function SheetWorkspace({
 
         <div className="sheet-page-footer">
           <span>{character.metadata.updatedAt ? `Updated ${new Date(character.metadata.updatedAt).toLocaleString()}` : ""}</span>
-          <span>Original parchment-inspired theme · editable through the inspector</span>
+          <span>Original parchment-inspired theme - editable through the inspector</span>
         </div>
       </div>
     </div>
