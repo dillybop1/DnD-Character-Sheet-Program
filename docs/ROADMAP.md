@@ -116,6 +116,7 @@ Exit criteria:
 - [x] Milestone 2: design a guided character creation flow with required fields, defaults, and completion hints.
 - [x] Milestone 2: define lightweight local presets for common 5e 2024 character choices.
 - [x] Milestone 2: add inline validation and completion feedback throughout editing.
+- [x] User override: replace the permanent roster sidebar with a dedicated roster screen plus a return-to-roster action.
 
 ## Defaults for Future Work
 - Stay desktop-only and local-first for v1.

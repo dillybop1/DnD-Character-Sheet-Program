@@ -75,6 +75,16 @@ button:disabled {
     radial-gradient(circle at left center, rgba(92, 61, 33, 0.12), transparent 38%);
 }
 
+.app-shell-roster {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 1.5rem;
+  overflow: auto;
+}
+
+.app-shell-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .library-shell {
   position: relative;
   display: flex;
@@ -88,6 +98,16 @@ button:disabled {
     linear-gradient(145deg, rgba(255, 255, 255, 0.1), transparent 40%);
   color: #f6ead5;
   overflow: hidden;
+}
+
+.library-shell-screen {
+  width: min(100%, 980px);
+  min-height: calc(100dvh - 3rem);
+  margin: auto;
+  padding: 1.6rem 1.4rem 1.25rem;
+  border: 1px solid rgba(71, 41, 23, 0.22);
+  border-radius: 34px;
+  box-shadow: var(--shadow);
 }
 
 .library-shell::before {
@@ -106,6 +126,10 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+}
+
+.library-shell-screen .library-heading {
+  gap: 0.5rem;
 }
 
 .library-kicker,
@@ -136,10 +160,20 @@ button:disabled {
   font-weight: 700;
 }
 
+.library-shell-screen .library-heading h1 {
+  font-size: 3.3rem;
+}
+
 .library-copy {
   margin: 0;
   color: rgba(245, 233, 210, 0.72);
   font-size: 0.95rem;
+}
+
+.library-shell-screen .library-copy {
+  max-width: 44rem;
+  color: rgba(245, 233, 210, 0.8);
+  font-size: 1rem;
 }
 
 .library-search {
@@ -173,6 +207,10 @@ button:disabled {
 
 .library-toolbar {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.library-shell-screen .library-toolbar {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .action-button,
@@ -1185,10 +1223,22 @@ button:disabled {
     height: auto;
   }
 
+  .app-shell-roster {
+    padding: 0;
+  }
+
   .library-shell {
     min-height: 340px;
     border-right: 0;
     border-bottom: 1px solid rgba(71, 41, 23, 0.22);
+  }
+
+  .library-shell-screen {
+    width: 100%;
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 }
 
@@ -1219,6 +1269,7 @@ button:disabled {
 
   .inline-pair,
   .library-toolbar,
+  .library-shell-screen .library-toolbar,
   .workspace-actions,
   .list-row,
   .attack-row,

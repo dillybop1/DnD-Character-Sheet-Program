@@ -5,6 +5,7 @@ type CharacterLibraryProps = {
   summaries: CharacterSummary[];
   currentCharacterId: string | null;
   currentCharacterName: string | null;
+  variant?: "sidebar" | "screen";
   search: string;
   saveStatus: SaveStatus;
   loading: boolean;
@@ -28,6 +29,7 @@ export function CharacterLibrary({
   summaries,
   currentCharacterId,
   currentCharacterName,
+  variant = "sidebar",
   search,
   saveStatus,
   loading,
@@ -50,13 +52,16 @@ export function CharacterLibrary({
   }
 
   return (
-    <aside className="library-shell">
+    <aside className={`library-shell${variant === "screen" ? " library-shell-screen" : ""}`}>
       <div className="library-heading">
-        <span className="library-kicker">Desktop character vault</span>
+        <span className="library-kicker">
+          {variant === "screen" ? "Roster selector" : "Desktop character vault"}
+        </span>
         <h1>Wyrdsheet</h1>
         <p className="library-copy">
-          Local-first character bundles with art-aware sheets and a live paper-inspired
-          workspace.
+          {variant === "screen"
+            ? "Choose a sheet to enter the live workspace, or create and import one below."
+            : "Local-first character bundles with art-aware sheets and a live paper-inspired workspace."}
         </p>
       </div>
 
@@ -103,7 +108,9 @@ export function CharacterLibrary({
       </button>
 
       <div className="helper-row">
-        <span className="library-kicker">Roster</span>
+        <span className="library-kicker">
+          {variant === "screen" ? "Choose a sheet" : "Roster"}
+        </span>
         <span className="summary-badge">
           {formatLibraryStatus(summaries.length, loading, saveStatus)}
         </span>
